@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Itens e Peças</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Gerenciador de Itens e Peças</h1>
+        
+        <div class="form-section">
+            <h2>Cadastrar Item</h2>
+            <input type="text" id="itemNome" placeholder="Nome do Item">
+            <button onclick="adicionarItem()">Adicionar Item</button>
+        </div>
+        
+        <div class="form-section">
+            <h2>Cadastrar Peça</h2>
+            <select id="itemSelect"></select>
+            <input type="text" id="pecaCodigo" placeholder="Código da Peça">
+            <input type="number" id="pecaQuantidade" placeholder="Quantidade">
+            <input type="text" id="pecaUnidade" placeholder="Unidade de Medida">
+            <input type="text" id="pecaDescricao" placeholder="Descrição">
+            <button onclick="adicionarPeca()">Adicionar Peça</button>
+        </div>
+        
+        <div class="form-section">
+            <h2>Pesquisar Item</h2>
+            <input type="text" id="pesquisaInput" oninput="pesquisarItem()" placeholder="Pesquisar...">
+        </div>
+        
+        <div class="itens-list">
+            <h2>Itens Cadastrados</h2>
+            <table id="itensTable">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="itensBody"></tbody>
+            </table>
+        </div>
+
+        <button onclick="gerarExcel()">Gerar Excel</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
