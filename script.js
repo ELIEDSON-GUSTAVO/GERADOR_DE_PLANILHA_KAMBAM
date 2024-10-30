@@ -1,4 +1,4 @@
-let itens = {};
+let itens = JSON.parse(localStorage.getItem('itens')) || {};
 
 function adicionarItem() {
     const itemNome = document.getElementById('itemNome').value.trim();
@@ -7,6 +7,7 @@ function adicionarItem() {
         atualizarLista();
         document.getElementById('itemNome').value = '';
         atualizarSelect();
+        salvarItens();
     } else {
         alert('Informe o nome do item.');
     }
@@ -30,6 +31,8 @@ function adicionarPeca() {
         document.getElementById('pecaQuantidade').value = '';
         document.getElementById('pecaUnidade').value = '';
         document.getElementById('pecaDescricao').value = '';
+        salvarItens();
+        atualizarLista(); // Atualiza a lista após adicionar a peça
     } else {
         alert('Preencha todos os campos da peça.');
     }
@@ -40,7 +43,8 @@ function atualizarLista() {
     tbody.innerHTML = '';
     for (const item in itens) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${item}</td>
+        const pecas = itens[item].map(p => `${p.codigo} (${p.quantidade} ${p.unidade}): ${p.descricao}`).join('<br>');
+        tr.innerHTML = `<td>${item}</td><td>${pecas}</td>
                         <td>
                             <button onclick="verPecas('${item}')">Ver Peças</button>
                             <button onclick="editarItem('${item}')">Editar</button>
@@ -71,6 +75,7 @@ function editarItem(item) {
         delete itens[item];
         atualizarLista();
         atualizarSelect();
+        salvarItens();
     }
 }
 
@@ -81,7 +86,8 @@ function pesquisarItem() {
     for (const item in itens) {
         if (item.toLowerCase().includes(pesquisa)) {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${item}</td>
+            const pecas = itens[item].map(p => `${p.codigo} (${p.quantidade} ${p.unidade}): ${p.descricao}`).join('<br>');
+            tr.innerHTML = `<td>${item}</td><td>${pecas}</td>
                             <td>
                                 <button onclick="verPecas('${item}')">Ver Peças</button>
                                 <button onclick="editarItem('${item}')">Editar</button>
@@ -92,22 +98,95 @@ function pesquisarItem() {
 }
 
 function gerarExcel() {
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "CÓDIGO;QUANTIDADE;UN. MEDIDA;DESCRIÇÃO;LOCAL\n"; // Cabeçalho
+    const workbook = XLSX.utils.book_new();
+    const worksheetData = [["Item", "Código", "Quantidade", "Unidade", "Descrição"]];
 
     for (const item in itens) {
         itens[item].forEach(peca => {
-            const row = `${peca.codigo};${peca.quantidade};${peca.unidade};"${peca.descricao}";${item}\n`;
-            csvContent += row;
+            worksheetData.push([item, peca.codigo, peca.quantidade, peca.unidade, peca.descricao]);
         });
-        csvContent += "\n"; // Linha em branco entre itens
     }
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `itens_pecas.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Itens e Peças");
+
+    XLSX.writeFile(workbook, 'itens_pecas.xlsx');
 }
+
+function salvarItens() {
+    localStorage.setItem('itens', JSON.stringify(itens));
+}
+
+function importarExcel() {
+    const fileInput = document.getElementById('excelFile');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert('Selecione um arquivo Excel.');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+        const totalRows = rows.length - 1; // Total de linhas para importar
+        let importedRows = 0; // Contador de linhas importadas
+
+        // Exibe os itens sendo importados
+        rows.forEach((row, index) => {
+            if (index > 0) { // Ignora o cabeçalho
+                const [item, codigo, quantidade, unidade, descricao] = row;
+
+                // Validar a estrutura dos dados
+                if (!item || !codigo || !quantidade || !unidade || !descricao) {
+                    console.error(`Dados inválidos na linha ${index + 1}: ${row.join(', ')}`);
+                    alert(`Dados inválidos na linha ${index + 1}: ${row.join(', ')}`);
+                    return;
+                }
+
+                console.log(`Importando: ${item}, ${codigo}, ${quantidade}, ${unidade}, ${descricao}`);
+
+                if (!itens[item]) {
+                    itens[item] = [];
+                }
+                itens[item].push({
+                    codigo: codigo,
+                    quantidade: quantidade,
+                    unidade: unidade,
+                    descricao: descricao,
+                });
+
+                // Atualiza a barra de progresso
+                importedRows++;
+                atualizarProgresso(importedRows, totalRows);
+            }
+        });
+
+        salvarItens();
+        atualizarLista();
+        atualizarSelect();
+        alert("Importação concluída com sucesso!");
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+function atualizarProgresso(importedRows, totalRows) {
+    const progressoDiv = document.getElementById('progresso');
+    const progress = (importedRows / totalRows) * 100;
+    progressoDiv.innerHTML = `
+        <div class="progress-bar">
+            <div class="progress" style="width: ${progress}%;"></div>
+        </div>
+        <span>${importedRows} de ${totalRows} itens importados</span>
+    `;
+}
+
+// Inicializa a lista ao carregar a página
+atualizarLista();
+atualizarSelect();
