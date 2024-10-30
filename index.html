@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador de Itens e Peças</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -25,6 +26,13 @@
             <input type="text" id="pecaDescricao" placeholder="Descrição">
             <button onclick="adicionarPeca()">Adicionar Peça</button>
         </div>
+
+        <div class="form-section">
+            <h2>Importar Itens de Excel</h2>
+            <input type="file" id="excelFile" accept=".xlsx">
+            <button onclick="importarExcel()">Importar Itens</button>
+            <div id="progresso" style="margin-top: 10px;"></div> <!-- Div para mostrar progresso -->
+        </div>
         
         <div class="form-section">
             <h2>Pesquisar Item</h2>
@@ -37,6 +45,7 @@
                 <thead>
                     <tr>
                         <th>Item</th>
+                        <th>Peças</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -50,3 +59,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
