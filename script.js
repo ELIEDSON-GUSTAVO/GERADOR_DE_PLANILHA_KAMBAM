@@ -1,251 +1,260 @@
 let itens = [];
-let editandoItemIndex = -1;
-let editandoPecaIndex = -1;
-let pecasSelecionadas = {}; // Objeto para armazenar o estado de seleção das peças
+let pecas = {};
 
-// Função para adicionar ou editar um item
-function adicionarOuEditarItem() {
-    const nomeItem = document.getElementById("itemNome").value.trim();
-    if (!nomeItem) {
-        alert("Por favor, insira um nome para o item.");
-        return;
-    }
-
-    if (editandoItemIndex === -1) {
-        itens.push({ nome: nomeItem, pecas: [] });
-    } else {
-        itens[editandoItemIndex].nome = nomeItem;
-        editandoItemIndex = -1;
-    }
-
-    document.getElementById("itemNome").value = "";
+// Função para inicializar a aplicação
+function init() {
+    carregarDados();
     atualizarListaItens();
-    atualizarSelectItens();
-    salvarItens(); // Salvar dados após adicionar ou editar
 }
 
-// Função para adicionar ou editar uma peça
-function adicionarOuEditarPeca() {
-    const codigoPeca = document.getElementById("pecaCodigo").value.trim();
-    const quantidade = parseInt(document.getElementById("pecaQuantidade").value.trim());
-    const unidade = document.getElementById("pecaUnidade").value.trim();
-    const descricao = document.getElementById("pecaDescricao").value.trim();
-    const itemSelecionadoIndex = document.getElementById("itemSelect").value;
-
-    if (itemSelecionadoIndex === "") {
-        alert("Por favor, selecione um item.");
-        return;
+// Função para adicionar um item
+function adicionarItem() {
+    const itemNome = document.getElementById('itemNome').value;
+    if (itemNome) {
+        itens.push(itemNome);
+        pecas[itemNome] = []; // Inicializa as peças para o novo item
+        salvarDados();
+        atualizarListaItens();
+        document.getElementById('itemNome').value = '';
     }
-
-    if (!codigoPeca || quantidade <= 0 || !unidade || !descricao) {
-        alert("Por favor, preencha todos os campos da peça.");
-        return;
-    }
-
-    const itemIndex = parseInt(itemSelecionadoIndex);
-    if (editandoPecaIndex === -1) {
-        itens[itemIndex].pecas.push({ codigo: codigoPeca, quantidade, unidade, descricao });
-    } else {
-        itens[itemIndex].pecas[editandoPecaIndex] = { codigo: codigoPeca, quantidade, unidade, descricao };
-        editandoPecaIndex = -1;
-    }
-
-    document.getElementById("pecaCodigo").value = "";
-    document.getElementById("pecaQuantidade").value = "";
-    document.getElementById("pecaUnidade").value = "";
-    document.getElementById("pecaDescricao").value = "";
-    atualizarListaPecas(itemIndex);
-    salvarItens(); // Salvar dados após adicionar ou editar
 }
 
-// Atualiza a lista de itens na tabela
+// Função para adicionar uma peça a um item existente
+function adicionarPeca() {
+    const itemNome = document.getElementById('itemSelect').value;
+    const codigo = document.getElementById('pecaCodigo').value;
+    const quantidade = document.getElementById('pecaQuantidade').value;
+    const unidade = document.getElementById('pecaUnidade').value;
+    const descricao = document.getElementById('pecaDescricao').value;
+
+    if (itemNome && codigo) {
+        pecas[itemNome].push({ codigo, quantidade, unidade, descricao });
+        salvarDados();
+        atualizarListaPecas(itemNome);
+        document.getElementById('pecaCodigo').value = '';
+        document.getElementById('pecaQuantidade').value = '';
+        document.getElementById('pecaUnidade').value = '';
+        document.getElementById('pecaDescricao').value = '';
+    }
+}
+
+// Função para atualizar a lista de itens na tabela
 function atualizarListaItens() {
-    const itensBody = document.getElementById("itensBody");
-    itensBody.innerHTML = "";
+    const itensBody = document.getElementById('itensBody');
+    itensBody.innerHTML = '';
     itens.forEach((item, index) => {
-        const tr = document.createElement("tr");
+        const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><input type="checkbox" onchange="selecionarItem(${index}, this)" ${pecasSelecionadas[index] ? 'checked' : ''}></td>
-            <td>${item.nome} (${item.pecas.length} peças)</td>
+            <td><input type="checkbox" class="item-checkbox" data-index="${index}"></td>
             <td>
-                <button onclick="editarItem(${index})">Editar</button>
-                <button onclick="excluirItem(${index})">Excluir</button>
-                <button onclick="verPecas(${index})">Ver Peças</button>
+                <span class="item-nome" id="itemNome-${index}">${item}</span>
+                <input type="text" class="edit-item" id="editItem-${index}" style="display: none;" placeholder="Novo Nome">
+                <button onclick="toggleEditItem(${index})">Editar</button>
             </td>
+            <td><button onclick="verPecas('${item}')">Ver Peças</button></td>
+            <td><button onclick="removerItem(${index})">Remover</button></td>
         `;
         itensBody.appendChild(tr);
     });
+    atualizarSelectItem();
 }
 
-// Atualiza o select de itens para adicionar peças
-function atualizarSelectItens() {
-    const itemSelect = document.getElementById("itemSelect");
-    itemSelect.innerHTML = `<option value="">Selecione um item</option>`;
-    itens.forEach((item, index) => {
-        const option = document.createElement("option");
-        option.value = index;
-        option.textContent = item.nome;
-        itemSelect.appendChild(option);
+// Função para atualizar o select de itens
+function atualizarSelectItem() {
+    const select = document.getElementById('itemSelect');
+    select.innerHTML = '';
+    itens.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item;
+        option.textContent = item;
+        select.appendChild(option);
     });
 }
 
-// Ver as peças de um item
-function verPecas(itemIndex) {
-    const pecasList = document.getElementById("pecasList");
-    pecasList.innerHTML = ""; // Limpa a lista de peças
-
-    const item = itens[itemIndex];
-    item.pecas.forEach((peca, index) => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-            <input type="checkbox" class="pecaCheckbox" data-item-index="${itemIndex}" data-peca-index="${index}" ${pecasSelecionadas[itemIndex] && pecasSelecionadas[itemIndex][index] ? 'checked' : ''}>
-            ${peca.codigo} - ${peca.quantidade} ${peca.unidade} - ${peca.descricao}
-            <button onclick="editarPeca(${itemIndex}, ${index})">Editar</button>
-            <button onclick="excluirPeca(${itemIndex}, ${index})">Excluir</button>
-        `;
-        pecasList.appendChild(li);
-    });
-}
-
-// Funções para editar e excluir
-function editarItem(index) {
-    const item = itens[index];
-    document.getElementById("itemNome").value = item.nome;
-    editandoItemIndex = index;
-}
-
-function excluirItem(index) {
+// Função para remover um item e suas peças
+function removerItem(index) {
+    const itemNome = itens[index];
+    delete pecas[itemNome]; // Remove as peças associadas
     itens.splice(index, 1);
-    delete pecasSelecionadas[index]; // Remove as seleções desse item
+    salvarDados();
     atualizarListaItens();
-    atualizarSelectItens();
-    salvarItens(); // Salvar dados após excluir
 }
 
-function editarPeca(itemIndex, pecaIndex) {
-    const peca = itens[itemIndex].pecas[pecaIndex];
-    document.getElementById("pecaCodigo").value = peca.codigo;
-    document.getElementById("pecaQuantidade").value = peca.quantidade;
-    document.getElementById("pecaUnidade").value = peca.unidade;
-    document.getElementById("pecaDescricao").value = peca.descricao;
-    editandoPecaIndex = pecaIndex;
-    document.getElementById("itemSelect").value = itemIndex;
-}
-
-function excluirPeca(itemIndex, pecaIndex) {
-    itens[itemIndex].pecas.splice(pecaIndex, 1);
-    verPecas(itemIndex); // Atualiza a lista de peças após a exclusão
-    salvarItens(); // Salvar dados após excluir
-}
-
-// Função para importar dados de um arquivo Excel
-function importarExcel() {
-    const fileInput = document.getElementById("importFile");
-    const file = fileInput.files[0];
-    if (!file) {
-        alert("Por favor, selecione um arquivo para importar.");
-        return;
+// Função para atualizar a lista de peças de um item
+function atualizarListaPecas(itemNome) {
+    const itemList = document.getElementById('itemList');
+    itemList.innerHTML = '';
+    if (pecas[itemNome]) {
+        pecas[itemNome].forEach((peca, pIndex) => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span id="peca-${itemNome}-${pIndex}">${peca.codigo} - ${peca.quantidade} ${peca.unidade} - ${peca.descricao}</span>
+                <input type="text" class="edit-peca" id="editPeca-${itemNome}-${pIndex}" style="display: none;" placeholder="Novo Código">
+                <button onclick="toggleEditPeca('${itemNome}', ${pIndex})">Editar</button>
+                <button onclick="removerPeca('${itemNome}', ${pIndex})">Remover</button>
+            `;
+            itemList.appendChild(li);
+        });
     }
-
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-        processarImportacao(jsonData);
-    };
-    reader.readAsArrayBuffer(file);
 }
 
-// Processa a importação dos dados
-function processarImportacao(data) {
-    data.forEach((linha, index) => {
-        if (index === 0) return; // Ignora o cabeçalho
-        const [nomeItem, codigoPeca, quantidade, unidade, descricao] = linha;
-        let item = itens.find(i => i.nome === nomeItem);
-        if (!item) {
-            item = { nome: nomeItem, pecas: [] };
-            itens.push(item);
+// Função para pesquisar itens
+function pesquisarItem() {
+    const pesquisa = document.getElementById('pesquisaInput').value.toLowerCase();
+    const itensBody = document.getElementById('itensBody');
+    itensBody.innerHTML = '';
+    itens.forEach((item, index) => {
+        if (item.toLowerCase().includes(pesquisa)) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="checkbox" class="item-checkbox" data-index="${index}"></td>
+                <td>
+                    <span class="item-nome" id="itemNome-${index}">${item}</span>
+                    <input type="text" class="edit-item" id="editItem-${index}" style="display: none;" placeholder="Novo Nome">
+                    <button onclick="toggleEditItem(${index})">Editar</button>
+                </td>
+                <td><button onclick="verPecas('${item}')">Ver Peças</button></td>
+                <td><button onclick="removerItem(${index})">Remover</button></td>
+            `;
+            itensBody.appendChild(tr);
         }
-        item.pecas.push({ codigo: codigoPeca, quantidade, unidade, descricao });
     });
-    atualizarListaItens();
-    atualizarSelectItens();
-    salvarItens(); // Salvar dados após importação
 }
 
 // Função para gerar um arquivo Excel
 function gerarExcel() {
+    const selectedItems = [];
+    const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+    checkboxes.forEach(checkbox => {
+        const index = checkbox.getAttribute('data-index');
+        selectedItems.push(itens[index]);
+        // Adicionar também as peças
+        if (pecas[itens[index]]) {
+            pecas[itens[index]].forEach(p => {
+                selectedItems.push(`${itens[index]} - ${p.codigo}`);
+            });
+        }
+    });
+
+    const ws = XLSX.utils.json_to_sheet(selectedItems.map(item => ({ Item: item })));
     const wb = XLSX.utils.book_new();
-    const dados = [];
-
-    itens.forEach(item => {
-        const pecas = item.pecas.map(peca => [item.nome, peca.codigo, peca.quantidade, peca.unidade, peca.descricao]);
-        dados.push(...pecas);
-    });
-
-    const ws = XLSX.utils.aoa_to_sheet(dados);
-    XLSX.utils.book_append_sheet(wb, ws, "Itens e Peças");
-    XLSX.writeFile(wb, "itens_e_pecas.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, 'Itens');
+    XLSX.writeFile(wb, 'itens_selecionados.xlsx');
 }
 
-// Função para selecionar ou desmarcar um item e suas peças
-function selecionarItem(itemIndex, checkbox) {
-    const todasSelecionadas = checkbox.checked;
+// Função para importar itens de um arquivo Excel
+function importarExcel() {
+    const fileInput = document.getElementById('importFile');
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const importedData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        
+        // Resetar itens e peças
+        itens = [];
+        pecas = {};
 
-    // Atualiza a seleção das peças para o item selecionado
-    if (!pecasSelecionadas[itemIndex]) {
-        pecasSelecionadas[itemIndex] = {};
-    }
+        // Processar dados importados
+        importedData.forEach(row => {
+            const itemNome = row[0];
+            const codigo = row[1];
+            const quantidade = row[2];
+            const unidade = row[3];
+            const descricao = row[4];
 
-    // Selecionar ou desmarcar as peças de acordo com o status do item
-    verPecas(itemIndex); // Atualiza a lista de peças para garantir que só mostre as do item selecionado
-    const pecasCheckboxes = document.querySelectorAll(`#pecasList input[type='checkbox'][data-item-index='${itemIndex}']`);
-    pecasCheckboxes.forEach((pecaCheckbox, index) => {
-        pecaCheckbox.checked = todasSelecionadas; // Marcar ou desmarcar as peças
-        pecasSelecionadas[itemIndex][index] = todasSelecionadas; // Atualiza o objeto de seleção das peças
-    });
-}
+            if (itemNome) {
+                if (!itens.includes(itemNome)) {
+                    itens.push(itemNome);
+                    pecas[itemNome] = []; // Inicializa as peças para o novo item
+                }
 
-// Função para salvar itens e peças
-async function salvarItens() {
-    try {
-        const response = await fetch('http://localhost:3000/itens', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(itens),
+                if (codigo) {
+                    pecas[itemNome].push({ codigo, quantidade, unidade, descricao });
+                }
+            }
         });
 
-        if (!response.ok) {
-            throw new Error('Erro ao salvar itens');
-        }
-
-        alert('Itens salvos com sucesso!');
-    } catch (error) {
-        alert(error.message);
-    }
-}
-
-// Função para carregar itens e peças
-async function carregarItens() {
-    try {
-        const response = await fetch('http://localhost:3000/itens');
-        const data = await response.json();
-        itens = data; // Atualiza os itens do frontend
+        salvarDados(); // Salvar após a importação
         atualizarListaItens();
-        atualizarSelectItens();
-    } catch (error) {
-        alert('Erro ao carregar itens');
+        document.getElementById('importStatus').textContent = 'Importação concluída.';
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+// Função para ver as peças de um item
+function verPecas(itemNome) {
+    atualizarListaPecas(itemNome);
+}
+
+// Função para remover uma peça
+function removerPeca(itemNome, pIndex) {
+    pecas[itemNome].splice(pIndex, 1); // Remove a peça selecionada
+    salvarDados(); // Salva as alterações
+    atualizarListaPecas(itemNome); // Atualiza a lista de peças exibida
+}
+
+// Função para editar o nome do item
+function toggleEditItem(index) {
+    const itemNome = document.getElementById(`itemNome-${index}`);
+    const editInput = document.getElementById(`editItem-${index}`);
+
+    if (editInput.style.display === "none") {
+        editInput.style.display = "inline";
+        editInput.value = itemNome.innerText;
+        itemNome.style.display = "none";
+    } else {
+        if (editInput.value) {
+            itens[index] = editInput.value;
+            salvarDados();
+            atualizarListaItens();
+        }
+        editInput.style.display = "none";
+        itemNome.style.display = "inline";
     }
 }
 
-// Chame carregarItens ao iniciar a aplicação
-document.addEventListener('DOMContentLoaded', carregarItens);
+// Função para editar uma peça
+function toggleEditPeca(itemNome, pIndex) {
+    const pecaSpan = document.getElementById(`peca-${itemNome}-${pIndex}`);
+    const editInput = document.getElementById(`editPeca-${itemNome}-${pIndex}`);
 
+    if (editInput.style.display === "none") {
+        editInput.style.display = "inline";
+        editInput.value = pecas[itemNome][pIndex].codigo; // Pega o código atual da peça
+        pecaSpan.style.display = "none";
+    } else {
+        if (editInput.value) {
+            // Atualiza as informações da peça
+            pecas[itemNome][pIndex].codigo = editInput.value; // Aqui você pode adicionar mais campos se necessário
+            salvarDados();
+            atualizarListaPecas(itemNome);
+        }
+        editInput.style.display = "none";
+        pecaSpan.style.display = "inline";
+    }
+}
+
+// Função para salvar dados no localStorage
+function salvarDados() {
+    localStorage.setItem('itens', JSON.stringify(itens));
+    localStorage.setItem('pecas', JSON.stringify(pecas));
+}
+
+// Função para carregar dados do localStorage
+function carregarDados() {
+    const itensSalvos = JSON.parse(localStorage.getItem('itens'));
+    const pecasSalvas = JSON.parse(localStorage.getItem('pecas'));
+
+    if (itensSalvos) {
+        itens = itensSalvos;
+    }
+    if (pecasSalvas) {
+        pecas = pecasSalvas;
+    }
+}
 
 // Inicializa a aplicação ao carregar
 init();
