@@ -21,6 +21,7 @@ function adicionarOuEditarItem() {
     document.getElementById("itemNome").value = "";
     atualizarListaItens();
     atualizarSelectItens();
+    salvarItens(); // Salvar dados após adicionar ou editar
 }
 
 // Função para adicionar ou editar uma peça
@@ -54,6 +55,7 @@ function adicionarOuEditarPeca() {
     document.getElementById("pecaUnidade").value = "";
     document.getElementById("pecaDescricao").value = "";
     atualizarListaPecas(itemIndex);
+    salvarItens(); // Salvar dados após adicionar ou editar
 }
 
 // Atualiza a lista de itens na tabela
@@ -117,6 +119,7 @@ function excluirItem(index) {
     delete pecasSelecionadas[index]; // Remove as seleções desse item
     atualizarListaItens();
     atualizarSelectItens();
+    salvarItens(); // Salvar dados após excluir
 }
 
 function editarPeca(itemIndex, pecaIndex) {
@@ -132,6 +135,7 @@ function editarPeca(itemIndex, pecaIndex) {
 function excluirPeca(itemIndex, pecaIndex) {
     itens[itemIndex].pecas.splice(pecaIndex, 1);
     verPecas(itemIndex); // Atualiza a lista de peças após a exclusão
+    salvarItens(); // Salvar dados após excluir
 }
 
 // Função para importar dados de um arquivo Excel
@@ -169,6 +173,7 @@ function processarImportacao(data) {
     });
     atualizarListaItens();
     atualizarSelectItens();
+    salvarItens(); // Salvar dados após importação
 }
 
 // Função para gerar um arquivo Excel
@@ -190,44 +195,53 @@ function gerarExcel() {
 function selecionarItem(itemIndex, checkbox) {
     const todasSelecionadas = checkbox.checked;
 
+    // Atualiza a seleção das peças para o item selecionado
+    if (!pecasSelecionadas[itemIndex]) {
+        pecasSelecionadas[itemIndex] = {};
+    }
+
     // Selecionar ou desmarcar as peças de acordo com o status do item
     verPecas(itemIndex); // Atualiza a lista de peças para garantir que só mostre as do item selecionado
     const pecasCheckboxes = document.querySelectorAll(`#pecasList input[type='checkbox'][data-item-index='${itemIndex}']`);
-    pecasCheckboxes.forEach((pecaCheckbox) => {
-        pecaCheckbox.checked = todasSelecionadas; // Marcar ou desmarcar as peças
-        // Atualiza o objeto de seleção das peças
-        if (!pecasSelecionadas[itemIndex]) {
-            pecasSelecionadas[itemIndex] = {};
-        }
-        pecasSelecionadas[itemIndex][pecaCheckbox.dataset.pecaIndex] = todasSelecionadas;
-    });
-}
-
-// Função para atualizar a seleção das peças ao visualizar as peças
-function atualizarSelecaoPecas(itemIndex) {
-    const pecasCheckboxes = document.querySelectorAll(`#pecasList input[type='checkbox'][data-item-index='${itemIndex}']`);
     pecasCheckboxes.forEach((pecaCheckbox, index) => {
-        pecaCheckbox.checked = pecasSelecionadas[itemIndex] && pecasSelecionadas[itemIndex][index];
+        pecaCheckbox.checked = todasSelecionadas; // Marcar ou desmarcar as peças
+        pecasSelecionadas[itemIndex][index] = todasSelecionadas; // Atualiza o objeto de seleção das peças
     });
 }
 
-// Chame atualizarSelecaoPecas no final da função verPecas
-function verPecas(itemIndex) {
-    const pecasList = document.getElementById("pecasList");
-    pecasList.innerHTML = ""; // Limpa a lista de peças
+// Função para salvar itens e peças
+async function salvarItens() {
+    try {
+        const response = await fetch('http://localhost:3000/itens', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(itens),
+        });
 
-    const item = itens[itemIndex];
-    item.pecas.forEach((peca, index) => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-            <input type="checkbox" class="pecaCheckbox" data-item-index="${itemIndex}" data-peca-index="${index}" ${pecasSelecionadas[itemIndex] && pecasSelecionadas[itemIndex][index] ? 'checked' : ''}>
-            ${peca.codigo} - ${peca.quantidade} ${peca.unidade} - ${peca.descricao}
-            <button onclick="editarPeca(${itemIndex}, ${index})">Editar</button>
-            <button onclick="excluirPeca(${itemIndex}, ${index})">Excluir</button>
-        `;
-        pecasList.appendChild(li);
-    });
+        if (!response.ok) {
+            throw new Error('Erro ao salvar itens');
+        }
 
-    // Atualiza a seleção das peças
-    atualizarSelecaoPecas(itemIndex);
+        alert('Itens salvos com sucesso!');
+    } catch (error) {
+        alert(error.message);
+    }
 }
+
+// Função para carregar itens e peças
+async function carregarItens() {
+    try {
+        const response = await fetch('http://localhost:3000/itens');
+        const data = await response.json();
+        itens = data; // Atualiza os itens do frontend
+        atualizarListaItens();
+        atualizarSelectItens();
+    } catch (error) {
+        alert('Erro ao carregar itens');
+    }
+}
+
+// Chame carregarItens ao iniciar a aplicação
+document.addEventListener('DOMContentLoaded', carregarItens);
