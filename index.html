@@ -1,50 +1,122 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador de Itens e Peças</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-    <script src="script.js" defer></script>
+    <title>Cadastro de Itens e Peças</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h1>Gerenciador de Itens e Peças</h1>
+    <h1>Cadastro de Itens e Peças</h1>
+    
+    <div id="form-container">
+        <h3>Adicionar Itens</h3>
+        <input type="text" id="item-name" placeholder="Nome do Item" required />
+        <button id="add-item">Adicionar Item</button>
+        <button id="clear-items">Limpar Itens</button>
+    </div>
 
-    <h2>Adicionar Item</h2>
-    <input type="text" id="itemNome" placeholder="Nome do item">
-    <button onclick="adicionarOuEditarItem()">Adicionar/Editar Item</button>
+    <div id="items-list">
+        <h3>Itens</h3>
+        <ul id="item-list">
+            <!-- Itens serão listados aqui -->
+        </ul>
+    </div>
 
-    <h2>Adicionar Peça</h2>
-    <select id="itemSelect">
-        <option value="">Selecione um item</option>
-    </select>
-    <input type="text" id="pecaCodigo" placeholder="Código da peça">
-    <input type="number" id="pecaQuantidade" placeholder="Quantidade">
-    <input type="text" id="pecaUnidade" placeholder="Unidade">
-    <input type="text" id="pecaDescricao" placeholder="Descrição">
-    <button onclick="adicionarOuEditarPeca()">Adicionar/Editar Peça</button>
+    <div id="form-pieces">
+        <h3>Adicionar Peças ao Item</h3>
+        <input type="text" id="piece-name" placeholder="Nome da Peça" required />
+        <button id="add-piece">Adicionar Peça</button>
+    </div>
 
-    <h2>Lista de Itens</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Selecionar</th>
-                <th>Item</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody id="itensBody"></tbody>
-    </table>
+    <div id="pieces-list">
+        <h3>Peças</h3>
+        <ul id="piece-list">
+            <!-- Peças serão listadas aqui -->
+        </ul>
+    </div>
 
-    <h2>Lista de Peças</h2>
-    <ul id="pecasList"></ul>
+    <h3>Resumo</h3>
+    <pre id="summary"></pre>
 
-    <h2>Importar e Exportar</h2>
-    <input type="file" id="importFile" accept=".xlsx">
-    <button onclick="importarExcel()">Importar</button>
-    <button onclick="gerarExcel()">Exportar Selecionados</button>
+    <script>
+        // Variáveis para armazenar itens e peças
+        let itens = JSON.parse(localStorage.getItem('itens')) || [];
+        let pecas = JSON.parse(localStorage.getItem('pecas')) || [];
 
-    <div id="importStatus"></div>
+        // Função para renderizar a lista de itens
+        function renderItems() {
+            let itemList = $('#item-list');
+            itemList.empty();
+            itens.forEach((item, index) => {
+                itemList.append(`
+                    <li>${item}
+                        <button class="remove-item" data-index="${index}">Remover</button>
+                        <button class="add-piece" data-item="${item}">Adicionar Peça</button>
+                    </li>
+                `);
+            });
+        }
+
+        // Função para renderizar a lista de peças
+        function renderPieces() {
+            let pieceList = $('#piece-list');
+            pieceList.empty();
+            pecas.forEach((peca) => {
+                pieceList.append(`<li>${peca}</li>`);
+            });
+        }
+
+        // Função para renderizar o resumo
+        function renderSummary() {
+            $('#summary').text(`Itens: ${itens.length}\nPeças: ${pecas.length}`);
+        }
+
+        // Adicionar item
+        $('#add-item').click(function() {
+            let itemName = $('#item-name').val().trim();
+            if (itemName) {
+                itens.push(itemName);
+                localStorage.setItem('itens', JSON.stringify(itens)); // Salvar no localStorage
+                $('#item-name').val(''); // Limpar o campo
+                renderItems(); // Atualizar a lista de itens
+                renderSummary(); // Atualizar o resumo
+            }
+        });
+
+        // Remover item
+        $('#item-list').on('click', '.remove-item', function() {
+            let itemIndex = $(this).data('index');
+            itens.splice(itemIndex, 1);
+            localStorage.setItem('itens', JSON.stringify(itens)); // Salvar no localStorage
+            renderItems(); // Atualizar a lista de itens
+            renderSummary(); // Atualizar o resumo
+        });
+
+        // Adicionar peça
+        $('#add-piece').click(function() {
+            let pieceName = $('#piece-name').val().trim();
+            if (pieceName) {
+                pecas.push(pieceName);
+                localStorage.setItem('pecas', JSON.stringify(pecas)); // Salvar no localStorage
+                $('#piece-name').val(''); // Limpar o campo
+                renderPieces(); // Atualizar a lista de peças
+                renderSummary(); // Atualizar o resumo
+            }
+        });
+
+        // Limpar itens
+        $('#clear-items').click(function() {
+            itens = [];
+            localStorage.removeItem('itens'); // Remover do localStorage
+            renderItems(); // Atualizar a lista de itens
+            renderSummary(); // Atualizar o resumo
+        });
+
+        // Inicializar as listas ao carregar a página
+        renderItems();
+        renderPieces();
+        renderSummary();
+    </script>
 </body>
 </html>
