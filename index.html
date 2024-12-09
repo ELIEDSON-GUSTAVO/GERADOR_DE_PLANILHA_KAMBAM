@@ -3,48 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Itens</title>
+    <title>Gerenciador de Itens e Peças</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="script.js" defer></script>
 </head>
 <body>
-    <h1>Cadastro de Itens</h1>
-    <h2>Adicionar Item</h2>
-    <input type="text" id="itemNome" placeholder="Nome do Item">
-    <button onclick="adicionarItem()">Adicionar Item</button>
+    <h1>Gerenciador de Itens e Peças</h1>
 
-    <h2>Adicionar Peça a um Item</h2>
-    <select id="itemSelect"></select>
-    <input type="text" id="pecaCodigo" placeholder="Código da Peça">
+    <h2>Adicionar Item</h2>
+    <input type="text" id="itemNome" placeholder="Nome do item">
+    <button onclick="adicionarOuEditarItem()">Adicionar/Editar Item</button>
+
+    <h2>Adicionar Peça</h2>
+    <select id="itemSelect">
+        <option value="">Selecione um item</option>
+    </select>
+    <input type="text" id="pecaCodigo" placeholder="Código da peça">
     <input type="number" id="pecaQuantidade" placeholder="Quantidade">
     <input type="text" id="pecaUnidade" placeholder="Unidade">
     <input type="text" id="pecaDescricao" placeholder="Descrição">
-    <button onclick="adicionarPeca()">Adicionar Peça</button>
+    <button onclick="adicionarOuEditarPeca()">Adicionar/Editar Peça</button>
 
     <h2>Lista de Itens</h2>
-    <input type="text" id="pesquisaInput" onkeyup="pesquisarItem()" placeholder="Pesquisar Itens">
     <table>
         <thead>
             <tr>
-                <th></th>
+                <th>Selecionar</th>
                 <th>Item</th>
-                <th>Peças</th>
                 <th>Ações</th>
             </tr>
         </thead>
         <tbody id="itensBody"></tbody>
     </table>
 
-    <h2>Peças de um Item</h2>
-    <ul id="itemList"></ul>
-    <button onclick="removerPecasSelecionadas()">Remover Peças Selecionadas</button>
+    <h2>Lista de Peças</h2>
+    <ul id="pecasList"></ul>
 
-    <h2>Importar/Exportar</h2>
-    <input type="file" id="importFile">
-    <button onclick="importarExcel()">Importar Itens</button>
-    <button onclick="gerarExcel()">Gerar Excel</button>
+    <h2>Importar e Exportar</h2>
+    <input type="file" id="importFile" accept=".xlsx">
+    <button onclick="importarExcel()">Importar</button>
+    <button onclick="gerarExcel()">Exportar Selecionados</button>
+
     <div id="importStatus"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-    <script src="script.js"></script>
 </body>
 </html>
