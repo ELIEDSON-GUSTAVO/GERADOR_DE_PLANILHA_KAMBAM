@@ -227,6 +227,15 @@ function verPecas(itemIndex) {
         `;
         pecasList.appendChild(li);
     });
+    // Salvar itens no localStorage
+localStorage.setItem('itens', JSON.stringify(itens));
+
+// Carregar os itens do localStorage
+let itensSalvos = JSON.parse(localStorage.getItem('itens'));
+if (itensSalvos) {
+    itens = itensSalvos;
+}
+
 
     // Atualiza a seleção das peças
     atualizarSelecaoPecas(itemIndex);
