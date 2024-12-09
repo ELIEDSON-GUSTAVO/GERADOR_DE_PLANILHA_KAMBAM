@@ -1,6 +1,3 @@
-
-Claro! Aqui está o código completo modificado para o seu site de cadastro de produtos, incluindo a funcionalidade de persistência com localStorage. Você pode copiar e colar este código:
-javascript
 let itens = [];
 let editandoItemIndex = -1;
 let editandoPecaIndex = -1;
@@ -34,7 +31,7 @@ editandoItemIndex = -1;
 document.getElementById("itemNome").value = "";
 atualizarListaItens();
 atualizarSelectItens();
-salvarDados(); // Chame a função para salvar os dados
+salvarDados(); // Chama a função para salvar os dados
 }
 // Função para adicionar ou editar uma peça
 function adicionarOuEditarPeca() {
@@ -93,7 +90,37 @@ pecasList.innerHTML = ""; // Limpa a lista de peças
 const item = itens[itemIndex];
 item.pecas.forEach((peca, index) => {
 const li = document.createElement("li");
-li.innerHTML = `
-<input type="checkbox" class="pecaCheckbox" data-item-index="${itemIndex}" data-peca-index="${index}" ${pecasSelecionadas[itemIndex] && pecasSelecionadas[itemIndex][index] ? 'checked' : ''}>
-${peca.codigo} - ${peca.quantidade} ${peca.unidade} - ${peca.descricao}
-<button onclick="editarPeca(${itemIndex}, ${index})">Editar<button onclick="excluirPeca(${itemIndex}, ${index})">Excluir
+li.innerHTML =              <input type="checkbox" class="pecaCheckbox" data-item-index="${itemIndex}" data-peca-index="${index}">             ${peca.codigo} - ${peca.quantidade} ${peca.unidade} - ${peca.descricao}             <button onclick="editarPeca(${itemIndex}, ${index})">Editar<button onclick="excluirPeca(${itemIndex}, ${index})">Excluir;
+pecasList.appendChild(li);
+});
+}
+// Funções para editar e excluir
+function editarItem(index) {
+const item = itens[index];
+document.getElementById("itemNome").value = item.nome;
+editandoItemIndex = index;
+}
+function excluirItem(index) {
+itens.splice(index, 1);
+delete pecasSelecionadas[index]; // Remove as seleções desse item
+atualizarListaItens();
+atualizarSelectItens();
+salvarDados(); // Atualiza o localStorage
+}
+function editarPeca(itemIndex, pecaIndex) {
+const peca = itens[itemIndex].pecas[pecaIndex];
+document.getElementById("pecaCodigo").value = peca.codigo;
+document.getElementById("pecaQuantidade").value = peca.quantidade;
+document.getElementById("pecaUnidade").value = peca.unidade;
+document.getElementById("pecaDescricao").value = peca.descricao;
+editandoPecaIndex = pecaIndex;
+document.getElementById("itemSelect").value = itemIndex;
+}
+function excluirPeca(itemIndex, pecaIndex) {
+itens[itemIndex].pecas.splice(pecaIndex, 1);
+atualizarListaPecas(itemIndex);
+salvarDados(); // Atualiza o localStorage
+}
+// Chame esta função quando a página for carregada
+window.onload = carregarDados;
+### Elementos HTML Necessários
