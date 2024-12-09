@@ -3,6 +3,21 @@ let editandoItemIndex = -1;
 let editandoPecaIndex = -1;
 let pecasSelecionadas = {}; // Objeto para armazenar o estado de seleção das peças
 
+// Carregar os itens do localStorage quando a página for carregada
+window.onload = function() {
+    let itensSalvos = JSON.parse(localStorage.getItem('itens'));
+    if (itensSalvos) {
+        itens = itensSalvos;
+    }
+    atualizarListaItens();
+    atualizarSelectItens();
+};
+
+// Função para salvar os dados no localStorage
+function salvarDados() {
+    localStorage.setItem('itens', JSON.stringify(itens));
+}
+
 // Função para adicionar ou editar um item
 function adicionarOuEditarItem() {
     const nomeItem = document.getElementById("itemNome").value.trim();
@@ -21,6 +36,7 @@ function adicionarOuEditarItem() {
     document.getElementById("itemNome").value = "";
     atualizarListaItens();
     atualizarSelectItens();
+    salvarDados(); // Salva os dados no localStorage após modificar
 }
 
 // Função para adicionar ou editar uma peça
@@ -54,6 +70,7 @@ function adicionarOuEditarPeca() {
     document.getElementById("pecaUnidade").value = "";
     document.getElementById("pecaDescricao").value = "";
     atualizarListaPecas(itemIndex);
+    salvarDados(); // Salva os dados no localStorage após modificar
 }
 
 // Atualiza a lista de itens na tabela
@@ -103,6 +120,8 @@ function verPecas(itemIndex) {
         `;
         pecasList.appendChild(li);
     });
+    atualizarSelecaoPecas(itemIndex);
+    salvarDados(); // Salva os dados no localStorage após modificar
 }
 
 // Funções para editar e excluir
@@ -117,6 +136,7 @@ function excluirItem(index) {
     delete pecasSelecionadas[index]; // Remove as seleções desse item
     atualizarListaItens();
     atualizarSelectItens();
+    salvarDados(); // Salva os dados no localStorage após excluir
 }
 
 function editarPeca(itemIndex, pecaIndex) {
@@ -132,58 +152,7 @@ function editarPeca(itemIndex, pecaIndex) {
 function excluirPeca(itemIndex, pecaIndex) {
     itens[itemIndex].pecas.splice(pecaIndex, 1);
     verPecas(itemIndex); // Atualiza a lista de peças após a exclusão
-}
-
-// Função para importar dados de um arquivo Excel
-function importarExcel() {
-    const fileInput = document.getElementById("importFile");
-    const file = fileInput.files[0];
-    if (!file) {
-        alert("Por favor, selecione um arquivo para importar.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-        processarImportacao(jsonData);
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-// Processa a importação dos dados
-function processarImportacao(data) {
-    data.forEach((linha, index) => {
-        if (index === 0) return; // Ignora o cabeçalho
-        const [nomeItem, codigoPeca, quantidade, unidade, descricao] = linha;
-        let item = itens.find(i => i.nome === nomeItem);
-        if (!item) {
-            item = { nome: nomeItem, pecas: [] };
-            itens.push(item);
-        }
-        item.pecas.push({ codigo: codigoPeca, quantidade, unidade, descricao });
-    });
-    atualizarListaItens();
-    atualizarSelectItens();
-}
-
-// Função para gerar um arquivo Excel
-function gerarExcel() {
-    const wb = XLSX.utils.book_new();
-    const dados = [];
-
-    itens.forEach(item => {
-        const pecas = item.pecas.map(peca => [item.nome, peca.codigo, peca.quantidade, peca.unidade, peca.descricao]);
-        dados.push(...pecas);
-    });
-
-    const ws = XLSX.utils.aoa_to_sheet(dados);
-    XLSX.utils.book_append_sheet(wb, ws, "Itens e Peças");
-    XLSX.writeFile(wb, "itens_e_pecas.xlsx");
+    salvarDados(); // Salva os dados no localStorage após excluir
 }
 
 // Função para selecionar ou desmarcar um item e suas peças
@@ -201,6 +170,7 @@ function selecionarItem(itemIndex, checkbox) {
         }
         pecasSelecionadas[itemIndex][pecaCheckbox.dataset.pecaIndex] = todasSelecionadas;
     });
+    salvarDados(); // Salva os dados no localStorage após selecionar ou desmarcar
 }
 
 // Função para atualizar a seleção das peças ao visualizar as peças
@@ -211,22 +181,6 @@ function atualizarSelecaoPecas(itemIndex) {
     });
 }
 
-// Chame atualizarSelecaoPecas no final da função verPecas
-function verPecas(itemIndex) {
-    const pecasList = document.getElementById("pecasList");
-    pecasList.innerHTML = ""; // Limpa a lista de peças
-
-    const item = itens[itemIndex];
-    item.pecas.forEach((peca, index) => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-            <input type="checkbox" class="pecaCheckbox" data-item-index="${itemIndex}" data-peca-index="${index}" ${pecasSelecionadas[itemIndex] && pecasSelecionadas[itemIndex][index] ? 'checked' : ''}>
-            ${peca.codigo} - ${peca.quantidade} ${peca.unidade} - ${peca.descricao}
-            <button onclick="editarPeca(${itemIndex}, ${index})">Editar</button>
-            <button onclick="excluirPeca(${itemIndex}, ${index})">Excluir</button>
-        `;
-        pecasList.appendChild(li);
-    });
 
     // Atualiza a seleção das peças
     atualizarSelecaoPecas(itemIndex);
