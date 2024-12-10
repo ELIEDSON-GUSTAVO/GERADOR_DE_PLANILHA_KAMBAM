@@ -1,6 +1,10 @@
-let itens = [];
+let itens = JSON.parse(localStorage.getItem("itens")) || [];
 let editandoItemIndex = -1;
 let editandoPecaIndex = -1;
+
+function salvarLocal() {
+    localStorage.setItem("itens", JSON.stringify(itens));
+}
 
 function adicionarOuEditarItem() {
     const itemNome = document.getElementById("itemNome").value.trim();
@@ -12,8 +16,10 @@ function adicionarOuEditarItem() {
     } else {
         itens.push({ nome: itemNome, pecas: [] });
     }
+
     atualizarListaItens();
     atualizarSelectItens();
+    salvarLocal();
     document.getElementById("itemNome").value = "";
 }
 
@@ -38,6 +44,7 @@ function adicionarOuEditarPeca() {
     }
 
     atualizarListaPecas(itemIndex);
+    salvarLocal();
     document.getElementById("pecaCodigo").value = "";
     document.getElementById("pecaQuantidade").value = "";
     document.getElementById("pecaUnidade").value = "";
@@ -95,9 +102,15 @@ function importarJson(event) {
     if (file) {
         const reader = new FileReader();
         reader.onload = function (e) {
-            itens = JSON.parse(e.target.result);
-            atualizarListaItens();
-            atualizarSelectItens();
+            const data = JSON.parse(e.target.result);
+            if (Array.isArray(data)) {
+                itens = data;
+                salvarLocal();
+                atualizarListaItens();
+                atualizarSelectItens();
+            } else {
+                alert("Formato de arquivo inválido. O JSON deve ser uma lista de itens.");
+            }
         };
         reader.readAsText(file);
     }
@@ -128,16 +141,23 @@ function importarExcel() {
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const importedData = XLSX.utils.sheet_to_json(sheet);
         itens = importedData.map(row => ({
-            nome: row["Item"],
+            nome: row["Item"] || "Item Sem Nome",
             pecas: (row["Código das Peças"] || "").split(", ").map((codigo, i) => ({
-                codigo,
+                codigo: codigo || "N/A",
                 quantidade: parseInt((row["Quantidades"] || "").split(", ")[i]) || 0,
-                unidade: (row["Unidades"] || "").split(", ")[i],
-                descricao: (row["Descrições"] || "").split(", ")[i]
+                unidade: (row["Unidades"] || "").split(", ")[i] || "N/A",
+                descricao: (row["Descrições"] || "").split(", ")[i] || "N/A"
             }))
         }));
+        salvarLocal();
         atualizarListaItens();
         atualizarSelectItens();
     };
     reader.readAsArrayBuffer(file);
 }
+
+// Inicializar ao carregar
+document.addEventListener("DOMContentLoaded", () => {
+    atualizarListaItens();
+    atualizarSelectItens();
+});
