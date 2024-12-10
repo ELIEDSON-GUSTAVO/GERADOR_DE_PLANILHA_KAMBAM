@@ -41,13 +41,10 @@
     <ul id="pecasList"></ul>
 
     <h2>Importar e Exportar</h2>
-    <input type="file" id="importJsonFile" accept=".json" onchange="importarJson(event)">
-    <label for="importJsonFile" style="cursor: pointer;">Importar JSON</label>
-    <button onclick="salvarComoJson()">Exportar como JSON</button>
+    <input type="file" id="importFile" accept=".xlsx">
+    <button onclick="importarExcel()">Importar</button>
+    <button onclick="gerarExcel()">Exportar Selecionados</button>
 
-    <h2>Importar e Exportar Excel</h2>
-    <input type="file" id="importExcelFile" accept=".xlsx">
-    <button onclick="importarExcel()">Importar Excel</button>
-    <button onclick="gerarExcel()">Exportar para Excel</button>
+    <div id="importStatus"></div>
 </body>
 </html>
