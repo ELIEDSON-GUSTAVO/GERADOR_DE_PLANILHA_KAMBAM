@@ -3,6 +3,41 @@ let editandoItemIndex = -1;
 let editandoPecaIndex = -1;
 let pecasSelecionadas = {}; // Objeto para armazenar o estado de seleção das peças
 
+// Função para importar dados de uma planilha hospedada no GitHub
+function importarPlanilhaGitHub() {
+    const url = "https://raw.githubusercontent.com/ELIEDSON-GUSTAVO/banco-de-dados-de-pe-as-e-componentes/5b81959a09445d2118ad30e7c3fea3fb6d799004/DADOS%20DE%20COMPRADOS.xlsx"; // URL RAW do arquivo no GitHub
+
+    fetch(url)
+        .then(response => response.arrayBuffer())
+        .then(data => {
+            const workbook = XLSX.read(new Uint8Array(data), { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+            processarImportacao(jsonData);
+        })
+        .catch(error => {
+            console.error("Erro ao importar a planilha:", error);
+            alert("Não foi possível importar a planilha do GitHub.");
+        });
+}
+
+// Processa a importação dos dados
+function processarImportacao(data) {
+    data.forEach((linha, index) => {
+        if (index === 0) return; // Ignora o cabeçalho
+        const [nomeItem, codigoPeca, quantidade, unidade, descricao] = linha;
+        let item = itens.find(i => i.nome === nomeItem);
+        if (!item) {
+            item = { nome: nomeItem, pecas: [] };
+            itens.push(item);
+        }
+        item.pecas.push({ codigo: codigoPeca, quantidade, unidade, descricao });
+    });
+    atualizarListaItens();
+    atualizarSelectItens();
+}
+
 // Função para adicionar ou editar um item
 function adicionarOuEditarItem() {
     const nomeItem = document.getElementById("itemNome").value.trim();
@@ -134,43 +169,6 @@ function excluirPeca(itemIndex, pecaIndex) {
     verPecas(itemIndex); // Atualiza a lista de peças após a exclusão
 }
 
-// Função para importar dados de um arquivo Excel
-function importarExcel() {
-    const fileInput = document.getElementById("importFile");
-    const file = fileInput.files[0];
-    if (!file) {
-        alert("Por favor, selecione um arquivo para importar.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-        processarImportacao(jsonData);
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-// Processa a importação dos dados
-function processarImportacao(data) {
-    data.forEach((linha, index) => {
-        if (index === 0) return; // Ignora o cabeçalho
-        const [nomeItem, codigoPeca, quantidade, unidade, descricao] = linha;
-        let item = itens.find(i => i.nome === nomeItem);
-        if (!item) {
-            item = { nome: nomeItem, pecas: [] };
-            itens.push(item);
-        }
-        item.pecas.push({ codigo: codigoPeca, quantidade, unidade, descricao });
-    });
-    atualizarListaItens();
-    atualizarSelectItens();
-}
-
 // Função para gerar um arquivo Excel
 function gerarExcel() {
     const wb = XLSX.utils.book_new();
@@ -211,23 +209,7 @@ function atualizarSelecaoPecas(itemIndex) {
     });
 }
 
-// Chame atualizarSelecaoPecas no final da função verPecas
-function verPecas(itemIndex) {
-    const pecasList = document.getElementById("pecasList");
-    pecasList.innerHTML = ""; // Limpa a lista de peças
-
-    const item = itens[itemIndex];
-    item.pecas.forEach((peca, index) => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-            <input type="checkbox" class="pecaCheckbox" data-item-index="${itemIndex}" data-peca-index="${index}" ${pecasSelecionadas[itemIndex] && pecasSelecionadas[itemIndex][index] ? 'checked' : ''}>
-            ${peca.codigo} - ${peca.quantidade} ${peca.unidade} - ${peca.descricao}
-            <button onclick="editarPeca(${itemIndex}, ${index})">Editar</button>
-            <button onclick="excluirPeca(${itemIndex}, ${index})">Excluir</button>
-        `;
-        pecasList.appendChild(li);
-    });
-
-    // Atualiza a seleção das peças
-    atualizarSelecaoPecas(itemIndex);
-}
+// Função que será chamada assim que a página for carregada
+window.onload = function() {
+    importarPlanilhaGitHub(); // Chama a função para importar os dados
+};
