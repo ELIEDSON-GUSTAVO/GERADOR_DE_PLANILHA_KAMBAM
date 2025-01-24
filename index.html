@@ -1,92 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
+
+<html lang="pt-BR">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Site</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f4f4f4; }
-    </style>
+
+    <title>Gerenciador de Itens e Peças</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+    <script src="script.js" defer></script>
+
 </head>
+
 <body>
-    <h1>Bem-vindo ao Meu Site</h1>
-    <div id="outrasFuncoes">
-        <!-- Mantenha o código existente aqui -->
-        <p>Outras funcionalidades do site continuam funcionando normalmente.</p>
-    </div>
-    <h2>Itens Importados da Planilha</h2>
-    <table id="tabelaItens">
+
+    <h1>Gerenciador de Itens e Peças</h1>
+
+
+
+    <h2>Adicionar Item</h2>
+
+    <input type="text" id="itemNome" placeholder="Nome do item">
+
+    <button onclick="adicionarOuEditarItem()">Adicionar/Editar Item</button>
+
+
+
+    <h2>Adicionar Peça</h2>
+
+    <select id="itemSelect">
+
+        <option value="">Selecione um item</option>
+
+    </select>
+
+    <input type="text" id="pecaCodigo" placeholder="Código da peça">
+
+    <input type="number" id="pecaQuantidade" placeholder="Quantidade">
+
+    <input type="text" id="pecaUnidade" placeholder="Unidade">
+
+    <input type="text" id="pecaDescricao" placeholder="Descrição">
+
+    <button onclick="adicionarOuEditarPeca()">Adicionar/Editar Peça</button>
+
+
+
+    <h2>Lista de Itens</h2>
+
+    <table>
+
         <thead>
+
             <tr>
-                <th>Nome do Item</th>
-                <th>Código da Peça</th>
-                <th>Quantidade</th>
-                <th>Unidade</th>
-                <th>Descrição</th>
+
+                <th>Selecionar</th>
+
+                <th>Item</th>
+
+                <th>Ações</th>
+
             </tr>
+
         </thead>
-        <tbody>
-            <!-- Dados da planilha serão adicionados aqui -->
-        </tbody>
+
+        <tbody id="itensBody"></tbody>
+
     </table>
 
-    <script>
-        // URL do arquivo Excel no GitHub
-        const excelUrl = "https://github.com/ELIEDSON-GUSTAVO/banco-de-dados-de-pe-as-e-componentes/blob/3c2e7b03a9d4ec878c2840f1cc8ffec3c8650e06/DADOS%20DE%20COMPRADOS.xlsx";
 
-        // Função para buscar e processar a planilha
-        async function importarPlanilha() {
-            try {
-                // Busca o arquivo Excel como um blob
-                const response = await fetch(excelUrl);
-                const data = await response.arrayBuffer();
 
-                // Lê o arquivo Excel
-                const workbook = XLSX.read(data, { type: "array" });
+    <h2>Lista de Peças</h2>
 
-                // Pega a primeira aba da planilha
-                const primeiraAba = workbook.SheetNames[0];
-                const sheet = workbook.Sheets[primeiraAba];
+    <ul id="pecasList"></ul>
 
-                // Converte os dados para JSON
-                const json = XLSX.utils.sheet_to_json(sheet);
 
-                // Renderiza os dados na tabela
-                renderizarTabela(json);
-            } catch (error) {
-                console.error("Erro ao importar a planilha:", error);
-            }
-        }
 
-        // Função para renderizar os dados na tabela
-        function renderizarTabela(dados) {
-            const tabela = document.getElementById("tabelaItens").querySelector("tbody");
-            tabela.innerHTML = ""; // Limpa a tabela antes de renderizar
+    <h2>Importar e Exportar</h2>
 
-            dados.forEach(item => {
-                const linha = tabela.insertRow();
-                linha.insertCell().textContent = item["Nome do Item"] || "";
-                linha.insertCell().textContent = item["Código da Peça"] || "";
-                linha.insertCell().textContent = item["Quantidade"] || "";
-                linha.insertCell().textContent = item["Unidade"] || "";
-                linha.insertCell().textContent = item["Descrição"] || "";
-            });
-        }
+    <input type="file" id="importFile" accept=".xlsx">
 
-        // Outras funções do site
-        function outrasFuncoes() {
-            console.log("As outras funcionalidades do site estão funcionando.");
-        }
+    <button onclick="importarExcel()">Importar</button>
 
-        // Chama as funções ao carregar a página
-        window.onload = function() {
-            importarPlanilha(); // Importa a planilha
-            outrasFuncoes(); // Executa outras funcionalidades
-        };
-    </script>
+    <button onclick="gerarExcel()">Exportar Selecionados</button>
+
+
+
+    <div id="importStatus"></div>
+
 </body>
+
 </html>
