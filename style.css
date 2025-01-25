@@ -1,83 +1,183 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+/* Reset e estilo básico */
+* {
     margin: 0;
-    padding: 20px;
-}
-
-h1 {
-    color: #333;
-}
-
-h2 {
-    color: #555;
-}
-
-input[type="text"],
-input[type="number"],
-select {
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: 100%;
+    padding: 0;
     box-sizing: border-box;
 }
 
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #2c3e50;  /* Fundo escuro */
+    color: #ecf0f1;  /* Texto claro */
+    padding: 30px;
+    line-height: 1.6;
+}
+
+/* Estilo para os títulos */
+h1, h2 {
+    font-weight: 600;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+    color: #e74c3c;  /* Vermelho vibrante */
+}
+
+h1 {
+    font-size: 2.5em;
+    border-bottom: 2px solid #e74c3c;  /* Subtítulo vermelho */
+    padding-bottom: 10px;
+}
+
+h2 {
+    font-size: 1.8em;
+}
+
+/* Inputs e Selects */
+input[type="text"],
+input[type="number"],
+select {
+    padding: 12px 18px;
+    margin: 12px 0;
+    border: 2px solid #7f8c8d;  /* Cinza escuro para borda */
+    border-radius: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 1.1em;
+    background-color: #34495e;  /* Fundo escuro para inputs */
+    color: #ecf0f1;  /* Texto claro nos inputs */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+    border-color: #e74c3c;  /* Foco vermelho */
+    box-shadow: 0 0 8px rgba(231, 76, 60, 0.6);
+}
+
+/* Botão */
 button {
-    padding: 10px 15px;
-    background-color: #28a745;
+    padding: 12px 20px;
+    background-color: #e74c3c;  /* Botão vermelho */
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 30px;
     cursor: pointer;
+    font-size: 1.2em;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 button:hover {
-    background-color: #218838;
+    background-color: #c0392b;  /* Vermelho mais escuro ao passar o mouse */
+    transform: scale(1.05);
 }
 
+button:active {
+    background-color: #e74c3c;
+}
+
+/* Tabela */
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    font-size: 1.1em;
+    color: #ecf0f1;
 }
 
 th, td {
-    padding: 10px;
+    padding: 15px;
     text-align: left;
-    border: 1px solid #ddd;
+    border: 1px solid #7f8c8d;
+    transition: background-color 0.3s ease;
 }
 
 th {
-    background-color: #f7f7f7;
+    background-color: #e74c3c;  /* Cabeçalhos em vermelho */
+    color: white;
 }
 
 tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
+    background-color: #34495e;  /* Linhas alternadas em fundo escuro */
 }
 
 tbody tr:hover {
-    background-color: #f1f1f1;
+    background-color: #1abc9c;  /* Fundo verde suave ao passar o mouse */
 }
 
+/* Listas */
 ul {
     list-style-type: none;
     padding: 0;
 }
 
 li {
-    background-color: #fff;
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    background-color: #34495e;
+    padding: 15px;
+    margin: 10px 0;
+    border: 2px solid #7f8c8d;
+    border-radius: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
 }
 
+li:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Status de importação */
 #importStatus {
-    margin-top: 20px;
+    margin-top: 30px;
+    font-weight: 600;
+    font-size: 1.2em;
+    color: #e74c3c;  /* Vermelho para status */
+}
+
+/* Carregamento */
+#loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.4em;
+    color: #e74c3c;  /* Cor de carregamento vermelha */
+    background-color: rgba(44, 62, 80, 0.9);  /* Fundo escuro */
+    padding: 30px 40px;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
     font-weight: bold;
 }
+
+/* Responsividade */
+@media screen and (max-width: 768px) {
+    body {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 2.2em;
+    }
+
+    h2 {
+        font-size: 1.5em;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    button {
+        font-size: 1em;
+    }
+
+    table {
+        font-size: 1em;
+    }
+
+    li {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    }
