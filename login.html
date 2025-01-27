@@ -8,10 +8,10 @@
     <style>
         /* Corpo da página */
         body {
-            background-image: url('NOVA_PASTA/8d54fe_430af7f497cf44fbb293ff81807f5d58~mv2.jpeg'); /* Substitua 'sua-imagem.jpg' pelo caminho da sua imagem */
-            background-size: cover; /* A imagem vai cobrir toda a tela */
-            background-position: center; /* A imagem será centralizada */
-            background-attachment: fixed; /* A imagem ficará fixa ao rolar a página */
+            background-image: url('8d54fe_430af7f497cf44fbb293ff81807f5d58~mv2.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -21,7 +21,6 @@
             overflow: hidden;
         }
 
-        /* Container do login */
         .login-container {
             display: flex;
             justify-content: center;
@@ -30,9 +29,8 @@
             width: 100%;
         }
 
-        /* Caixa de login */
         .login-box {
-            background-color: rgba(26, 26, 26, 0.8); /* Fundo semitransparente para destacar o conteúdo */
+            background-color: rgba(26, 26, 26, 0.8);
             padding: 40px;
             border-radius: 15px;
             width: 350px;
@@ -42,7 +40,6 @@
             animation: slideIn 0.6s ease-out forwards;
         }
 
-        /* Animação de entrada */
         @keyframes slideIn {
             0% {
                 transform: translateY(50px);
@@ -62,7 +59,6 @@
             letter-spacing: 1px;
         }
 
-        /* Estilo dos campos de entrada */
         .input-field {
             margin-bottom: 20px;
             position: relative;
@@ -85,7 +81,6 @@
             box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
         }
 
-        /* Efeito hover do botão */
         button {
             width: 100%;
             padding: 15px;
@@ -108,14 +103,6 @@
             transform: scale(0.98);
         }
 
-        /* Texto de tentativas e erro */
-        #attempts-left {
-            color: #fff;
-            margin-top: 10px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
         .error-message {
             color: #ff0000;
             font-size: 14px;
@@ -123,7 +110,12 @@
             font-weight: 600;
         }
 
-        /* Transição suave dos elementos */
+        @media (max-width: 480px) {
+            .login-box {
+                width: 90%;
+            }
+        }
+
         .login-box input,
         .login-box button {
             opacity: 0;
@@ -142,7 +134,6 @@
             animation-delay: 0.7s;
         }
 
-        /* Animação fade in */
         @keyframes fadeIn {
             0% {
                 opacity: 0;
@@ -159,54 +150,53 @@
     <div class="login-container">
         <div class="login-box">
             <h2>Login</h2>
-            <form id="login-form">
+            <form id="login-form" action="#">
                 <div class="input-field">
-                    <input type="text" id="username" placeholder="Usuário" required>
+                    <!-- Campo de e-mail ajustado -->
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        autocomplete="username" 
+                        placeholder="Usuário (E-mail)" 
+                        required>
                 </div>
                 <div class="input-field">
-                    <input type="password" id="password" placeholder="Senha" required>
+                    <!-- Campo de senha ajustado -->
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        autocomplete="current-password" 
+                        placeholder="Senha" 
+                        required>
                 </div>
                 <button type="submit">Entrar</button>
-                <p id="attempts-left">Tentativas restantes: 5</p>
             </form>
             <p class="error-message" id="error-message"></p>
         </div>
     </div>
 
     <script>
-        // Credenciais válidas (usuário e senha)
-        const validCredentials = {
-            username: "usuario",
-            password: "senha123"
+        const validCredential = {
+            email: "engenharia1@nextimplementos.com.br",
+            password: "Eng@2024"
         };
 
-        let attempts = 5;  // Número de tentativas permitidas
-
-        // Função para validar login
         document.getElementById('login-form').addEventListener('submit', function (event) {
             event.preventDefault();
 
-            // Captura os valores inseridos
-            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Verifica se as credenciais são válidas
-            if (username === validCredentials.username && password === validCredentials.password) {
-                alert('Login bem-sucedido!');
-                // Redireciona para a URL desejada
+            if (email === validCredential.email && password === validCredential.password) {
                 window.location.href = 'https://eliedson-gustavo.github.io/GERADOR_DE_PLANILHA_KAMBAM/';
             } else {
-                attempts--;
-                document.getElementById('attempts-left').textContent = `Tentativas restantes: ${attempts}`;
-                document.getElementById('error-message').textContent = 'Usuário ou senha incorretos!';
-
-                // Bloqueia o login após 5 tentativas
-                if (attempts === 0) {
-                    document.getElementById('error-message').textContent = 'Limite de tentativas alcançado! Tente novamente mais tarde.';
-                    document.getElementById('username').disabled = true;
-                    document.getElementById('password').disabled = true;
-                    document.querySelector('button').disabled = true;
-                }
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = 'Usuário ou senha incorretos!';
+                setTimeout(() => {
+                    errorMessage.textContent = '';
+                }, 3000);
             }
         });
     </script>
