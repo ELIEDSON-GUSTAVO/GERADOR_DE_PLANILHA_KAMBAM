@@ -5,7 +5,7 @@ let pecasSelecionadas = {}; // Objeto para armazenar o estado de seleção das p
 
 // Função para importar dados de uma planilha hospedada no GitHub
 function importarPlanilhaGitHub() {
-    const url = "https://raw.githubusercontent.com/ELIEDSON-GUSTAVO/GERADOR_DE_PLANILHA_KAMBAM/7c5a67211aa7100ab963cb6fe6cf30ed2f56d8ea/DADOS.xlsx";
+    const url = "https://raw.githubusercontent.com/ELIEDSON-GUSTAVO/GERADOR_DE_PLANILHA_KAMBAM/080b4d79e654224e9fe4cdcbe7fcaa73b247343a/DADOS.xlsx";
 
 
     fetch(url)
