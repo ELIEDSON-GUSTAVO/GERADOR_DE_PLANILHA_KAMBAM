@@ -169,32 +169,31 @@ function excluirPeca(itemIndex, pecaIndex) {
     verPecas(itemIndex); // Atualiza a lista de peças após a exclusão
 }
 
-// Função para gerar um arquivo Excel com os itens selecionados
+// Função para gerar um arquivo Excel com itens e peças selecionados
 function gerarExcel() {
     const wb = XLSX.utils.book_new();
     const dados = [];
 
-    // Loop pelos itens
+    // Iterar pelos itens selecionados
     itens.forEach((item, itemIndex) => {
-        // Verificar se o item foi selecionado
-        if (pecasSelecionadas[itemIndex]) {
-            // Adiciona as peças do item selecionado
-            item.pecas.forEach((peca) => {
-                // Se a peça estiver marcada, adiciona à lista de dados
-                if (pecasSelecionadas[itemIndex][item.pecas.indexOf(peca)]) {
+        // Verificar se o item está selecionado
+        if (pecasSelecionadas[itemIndex] && Object.keys(pecasSelecionadas[itemIndex]).length > 0) {
+            // Filtrar as peças selecionadas para o item
+            item.pecas.forEach((peca, pecaIndex) => {
+                if (pecasSelecionadas[itemIndex][pecaIndex]) {
+                    // Adicionar item e peça ao dados
                     dados.push([item.nome, peca.codigo, peca.quantidade, peca.unidade, peca.descricao]);
                 }
             });
         }
     });
 
-    // Verifica se há dados para exportar
     if (dados.length > 0) {
         const ws = XLSX.utils.aoa_to_sheet(dados);
         XLSX.utils.book_append_sheet(wb, ws, "Itens e Peças Selecionadas");
         XLSX.writeFile(wb, "itens_e_pecas_selecionadas.xlsx");
     } else {
-        alert("Nenhum item selecionado para exportação.");
+        alert("Nenhum item ou peça foi selecionado para exportação.");
     }
 }
 
@@ -205,12 +204,13 @@ function selecionarItem(itemIndex, checkbox) {
     // Selecionar ou desmarcar as peças de acordo com o status do item
     verPecas(itemIndex); // Atualiza a lista de peças para garantir que só mostre as do item selecionado
     const pecasCheckboxes = document.querySelectorAll(`#pecasList input[type='checkbox'][data-item-index='${itemIndex}']`);
-    pecasCheckboxes.forEach((pecaCheckbox) => {
-        pecaCheckbox.checked = todasSelecionadas; // Marcar ou desmarcar as peças
-        // Atualiza o objeto de seleção das peças
-        if (!pecasSelecionadas[itemIndex]) {
-            pecasSelecionadas[itemIndex] = [];
-        }
-        pecasSelecionadas[itemIndex][pecaCheckbox.dataset.pecaIndex] = todasSelecionadas;
+    pecasCheckboxes.forEach(checkbox => {
+        checkbox.checked = todasSelecionadas;
+    });
+
+    // Atualiza o objeto de seleção de peças
+    pecasSelecionadas[itemIndex] = {};
+    pecasCheckboxes.forEach((checkbox, pecaIndex) => {
+        pecasSelecionadas[itemIndex][pecaIndex] = checkbox.checked;
     });
 }
