@@ -7,7 +7,6 @@ let pecasSelecionadas = {}; // Objeto para armazenar o estado de seleção das p
 function importarPlanilhaGitHub() {
     const url = "https://raw.githubusercontent.com/ELIEDSON-GUSTAVO/GERADOR_DE_PLANILHA_KAMBAM/080b4d79e654224e9fe4cdcbe7fcaa73b247343a/DADOS.xlsx";
 
-
     fetch(url)
         .then(response => response.arrayBuffer())
         .then(data => {
@@ -170,19 +169,29 @@ function excluirPeca(itemIndex, pecaIndex) {
     verPecas(itemIndex); // Atualiza a lista de peças após a exclusão
 }
 
-// Função para gerar um arquivo Excel
+// Função para gerar um arquivo Excel com apenas os itens selecionados
 function gerarExcel() {
     const wb = XLSX.utils.book_new();
     const dados = [];
 
-    itens.forEach(item => {
-        const pecas = item.pecas.map(peca => [item.nome, peca.codigo, peca.quantidade, peca.unidade, peca.descricao]);
-        dados.push(...pecas);
+    // Itera sobre os itens e inclui somente os itens selecionados
+    itens.forEach((item, itemIndex) => {
+        if (pecasSelecionadas[itemIndex]) {
+            item.pecas.forEach((peca, pecaIndex) => {
+                if (pecasSelecionadas[itemIndex][pecaIndex]) {
+                    dados.push([item.nome, peca.codigo, peca.quantidade, peca.unidade, peca.descricao]);
+                }
+            });
+        }
     });
 
-    const ws = XLSX.utils.aoa_to_sheet(dados);
-    XLSX.utils.book_append_sheet(wb, ws, "Itens e Peças");
-    XLSX.writeFile(wb, "itens_e_pecas.xlsx");
+    if (dados.length > 0) {
+        const ws = XLSX.utils.aoa_to_sheet(dados);
+        XLSX.utils.book_append_sheet(wb, ws, "Itens e Peças Selecionados");
+        XLSX.writeFile(wb, "itens_e_pecas_selecionados.xlsx");
+    } else {
+        alert("Nenhum item ou peça selecionado para exportação.");
+    }
 }
 
 // Função para selecionar ou desmarcar um item e suas peças
@@ -212,5 +221,5 @@ function atualizarSelecaoPecas(itemIndex) {
 
 // Função que será chamada assim que a página for carregada
 window.onload = function() {
-    importarPlanilhaGitHub(); // Chama a função para importar os dados
+    importarPlanilhaGitHub(); // Chama a função para importar os dados automaticamente
 };
