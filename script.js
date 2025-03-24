@@ -194,6 +194,33 @@ function gerarExcel() {
     }
 }
 
+// Função para gerar um arquivo CSV com apenas os itens selecionados
+function gerarCSV() {
+    const dados = [];
+
+    // Itera sobre os itens e inclui somente os itens selecionados
+    itens.forEach((item, itemIndex) => {
+        if (pecasSelecionadas[itemIndex]) {
+            item.pecas.forEach((peca, pecaIndex) => {
+                if (pecasSelecionadas[itemIndex][pecaIndex]) {
+                    dados.push([item.nome, peca.codigo, peca.quantidade, peca.unidade, peca.descricao].join(","));
+                }
+            });
+        }
+    });
+
+    if (dados.length > 0) {
+        const csvContent = dados.join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "itens_e_pecas_selecionados.csv";
+        link.click();
+    } else {
+        alert("Nenhum item ou peça selecionado para exportação.");
+    }
+}
+
 // Função para selecionar ou desmarcar um item e suas peças
 function selecionarItem(itemIndex, checkbox) {
     const todasSelecionadas = checkbox.checked;
